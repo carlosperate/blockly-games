@@ -96,21 +96,34 @@ def main(name, lang):
 
 def write_uncompressed(name, lang):
   print('\n%s - %s - uncompressed:' % (name.title(), lang))
-  cmd = ['closure-library-bin-read-only/build/closurebuilder.py',
-      '--root=appengine/js-read-only/',
-      '--root=appengine/generated/%s/' % lang,
-      '--root=appengine/js/',
+#  cmd = ['python',
+#      'closure-library-bin-read-only/build/closurebuilder.py',
+#      '--root=appengine/js-read-only/',
+#      '--root=appengine/generated/%s/' % lang,
+#      '--root=appengine/js/',
+#      '--namespace=%s' % name.replace('/', '.').title(),
+#      '--output_mode=list']
+  cmd = ['python',
+      os.path.join('closure-library-bin-read-only', 'build',
+      'closurebuilder.py'),
+      '--root=%s' % os.path.join('appengine','js-read-only',''),
+      '--root=%s' % os.path.join('appengine', 'generated', lang, ''),
+      '--root=%s' % os.path.join('appengine','js',''),
       '--namespace=%s' % name.replace('/', '.').title(),
       '--output_mode=list']
   directory = name
   while(directory):
-    cmd.append('--root=appengine/%s/generated/%s/' % (directory, lang))
-    cmd.append('--root=appengine/%s/js/' % directory)
+#    cmd.append('--root=appengine/%s/generated/%s/' % (directory, lang))
+#    cmd.append('--root=appengine/%s/js/' % directory)
+    cmd.append(r'--root=%s' % os.path.join(
+        'appengine', directory, 'generated', lang, ''))
+    cmd.append(r'--root=%s' % os.path.join('appengine', directory, 'js', ''))
     (directory, sep, fragment) = directory.rpartition(os.path.sep)
   proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
   files = proc.stdout.readlines()
 
-  prefix = 'appengine/'
+  prefix = os.path.join('appengine', '')
+  #prefix = 'appengine/'
   srcs = []
   for file in files:
     file = file.strip()
@@ -158,7 +171,7 @@ def trim_licence(code):
  [\\w ]+
 
  (Copyright \\d+ Google Inc.)
- https://blockly.googlecode.com/
+ https://developers.google.com/blockly/
 
  Licensed under the Apache License, Version 2.0 \\(the "License"\\);
  you may not use this file except in compliance with the License.
@@ -177,12 +190,26 @@ def trim_licence(code):
 
 def write_compressed(name, lang):
   print('\n%s - %s - compressed:' % (name.title(), lang))
-  cmd = ['closure-library-bin-read-only/build/closurebuilder.py',
-      '--root=appengine/js-read-only/',
-      '--root=appengine/generated/%s/' % lang,
-      '--root=appengine/js/',
+#  cmd = ['python',
+#      'closure-library-bin-read-only/build/closurebuilder.py',
+#      '--root=appengine/js-read-only/',
+#      '--root=appengine/generated/%s/' % lang,
+#      '--root=appengine/js/',
+#      '--namespace=%s' % name.replace('/', '.').title(),
+#      '--compiler_jar=closure-compiler-read-only/build/compiler.jar',
+#      '--compiler_flags=--compilation_level=ADVANCED_OPTIMIZATIONS',
+#      '--compiler_flags=--externs=svg-externs.js',
+#      '--compiler_flags=--externs=interpreter-externs.js',
+#      '--compiler_flags=--language_in=ECMASCRIPT5_STRICT',
+#      '--output_mode=compiled']
+  cmd = ['python',
+      os.path.join('closure-library-bin-read-only', 'build',
+      'closurebuilder.py'),
+      '--root=%s' % os.path.join('appengine','js-read-only',''),
+      '--root=%s' % os.path.join('appengine', 'generated', lang, ''),
+      '--root=%s' % os.path.join('appengine','js',''),
       '--namespace=%s' % name.replace('/', '.').title(),
-      '--compiler_jar=closure-compiler-read-only/build/compiler.jar',
+      '--compiler_jar=%s' % os.path.join('closure-compiler-read-only', 'build', 'compiler.jar'),
       '--compiler_flags=--compilation_level=ADVANCED_OPTIMIZATIONS',
       '--compiler_flags=--externs=svg-externs.js',
       '--compiler_flags=--externs=interpreter-externs.js',
@@ -190,8 +217,11 @@ def write_compressed(name, lang):
       '--output_mode=compiled']
   directory = name
   while(directory):
-    cmd.append('--root=appengine/%s/generated/%s/' % (directory, lang))
-    cmd.append('--root=appengine/%s/js/' % directory)
+    #cmd.append('--root=appengine/%s/generated/%s/' % (directory, lang))
+    #cmd.append('--root=appengine/%s/js/' % directory)
+    cmd.append(r'--root=%s' % os.path.join(
+        'appengine', directory, 'generated', lang, ''))
+    cmd.append(r'--root=%s' % os.path.join('appengine', directory, 'js', ''))
     (directory, sep, fragment) = directory.rpartition(os.path.sep)
   proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
   script = proc.stdout.readlines()
