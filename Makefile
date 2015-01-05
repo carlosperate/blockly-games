@@ -108,6 +108,45 @@ deps:
 	svn checkout https://github.com/google/blockly/trunk/generators $(JS_READ_ONLY)/blockly/generators
 	svn checkout https://github.com/google/blockly/trunk/msg/js $(JS_READ_ONLY)/blockly/msg-js
 
+# Git SVN init errors ignored as a second run will fail, for 1st run if repo is not initialise the svn fetch fails as expected
+deps_git:
+	mkdir -p $(JS_READ_ONLY)
+
+	-git svn init https://github.com/google/closure-library/trunk/closure/goog/ $(JS_READ_ONLY)/goog
+	git -C $(JS_READ_ONLY)/goog svn fetch -r HEAD
+	-git svn init https://github.com/google/closure-library/trunk/third_party/closure/goog/ $(JS_READ_ONLY)/third_party_goog
+	git -C $(JS_READ_ONLY)/third_party_goog svn fetch -r HEAD
+	-git svn init https://github.com/google/closure-library/trunk/closure/bin/ closure-library-bin-read-only
+	git -C closure-library-bin-read-only svn fetch -r HEAD
+
+	-git svn init http://closure-templates.googlecode.com/svn/trunk/ closure-templates-read-only
+	git -C closure-templates-read-only svn fetch -r HEAD
+	(cd closure-templates-read-only; ant SoyToJsSrcCompiler)
+	(cd closure-templates-read-only; ant SoyMsgExtractor)
+	cp -r closure-templates-read-only/javascript/soyutils_usegoog.js $(JS_READ_ONLY)
+
+	-git svn init https://github.com/google/closure-compiler/trunk/ closure-compiler-read-only
+	git -C closure-compiler-read-only svn fetch -r HEAD
+	(cd closure-compiler-read-only; ant jar)
+	chmod +x closure-library-bin-read-only/build/closurebuilder.py
+
+	-git svn init https://github.com/NeilFraser/JS-Interpreter/trunk/ $(JS_READ_ONLY)/JS-Interpreter
+	git -C $(JS_READ_ONLY)/JS-Interpreter svn fetch -r HEAD
+	java -jar closure-compiler-read-only/build/compiler.jar --js appengine/js-read-only/JS-Interpreter/acorn.js --js appengine/js-read-only/JS-Interpreter/interpreter.js --js_output_file appengine/js-read-only/JS-Interpreter/compiled.js
+
+	-git svn init https://github.com/ajaxorg/ace-builds/trunk/src-min-noconflict/ $(JS_READ_ONLY)/ace
+	git -C $(JS_READ_ONLY)/ace svn fetch -r HEAD
+
+	mkdir -p $(JS_READ_ONLY)/blockly
+	-git svn init https://github.com/google/blockly/trunk/core $(JS_READ_ONLY)/blockly/core
+	git -C $(JS_READ_ONLY)/blockly/core svn fetch -r HEAD
+	-git svn init https://github.com/google/blockly/trunk/blocks $(JS_READ_ONLY)/blockly/blocks
+	git -C $(JS_READ_ONLY)/blockly/blocks svn fetch -r HEAD
+	-git svn init https://github.com/google/blockly/trunk/generators $(JS_READ_ONLY)/blockly/generators
+	git -C $(JS_READ_ONLY)/blockly/generators svn fetch -r HEAD
+	-git svn init https://github.com/google/blockly/trunk/msg/js $(JS_READ_ONLY)/blockly/msg-js
+	git -C $(JS_READ_ONLY)/blockly/msg-js svn fetch -r HEAD
+
 clean: clean-languages clean-deps
 
 clean-languages:
